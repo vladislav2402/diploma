@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="icon" type="image/x-icon" href="clipboard.ico">
+    <title>All in One Scanner</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header mb-4">
+            <h2>Welcome to All in One Scanner!</h2>
+        </div>
+        <form action="/cluster" method="post">
+            <button>Scan current cluster</button>
+        </form>
+        <br>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flashed-messages">
+            {% for message in messages %}
+            <div class="alert alert-warning" role="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <h2>Upload File</h2>
+        <form action="/" method="post" enctype="multipart/form-data">
+            <input type="file" id="directoryInput" name="directory" webkitdirectory directory multiple><br><br>
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+</body>
+</html>
