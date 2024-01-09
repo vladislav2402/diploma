@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan History</title>
+    <link rel="icon" type="image/x-icon" href="clipboard.ico">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-4">
+    {% for scan in scan_history %}
+    <div class="card mt-3">
+        <div class="card-header alert alert-primary" data-toggle="collapse" data-target="#scan-{{ loop.index }}">
+            {{ scan.folder }} - {{ scan.timestamp }}
+        </div>
+        <div id="scan-{{ loop.index }}" class="collapse">
+            <div class="card-body">
+                {% for filename, findings in scan.scan_result.items() %}
+                {% if findings|length > 0 %}
+                <div class="card-header {{ 'alert alert-success' if findings|length == 0 else 'alert alert-danger' }}"
+                     {% if findings|length> 0 %}data-toggle="collapse" data-target="#file-{{ loop.index }}"{% endif %}>
+                    {{ filename }}
+                </div>
+                <div id="file-{{ loop.index }}" class="collapse">
+                    <div class="card-body">
+
+                        <div class="card text-white bg-danger mb-3" data-toggle="collapse"
+                             data-target="#errors-{{ loop.index }}">
+                            <div class="card-header">Errors</div>
+                        </div>
+                        <div id="errors-{{ loop.index }}" class="collapse">
+                            {% for finding in findings if finding.level == "error" %}
+                            <div class="alert alert-danger">
+                                <strong>{{ finding.vulnerability }}</strong><br>
+                                {{ finding.message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="card text-white bg-warning mb-3" data-toggle="collapse"
+                             data-target="#warnings-{{ loop.index }}">
+                            <div class="card-header">Warnings</div>
+                        </div>
+                        <div id="warnings-{{ loop.index }}" class="collapse">
+                            {% for finding in findings if finding.level == "warning" %}
+                            <div class="alert alert-warning">
+                                <strong>{{ finding.vulnerability }}</strong><br>
+                                {{ finding.message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="card bg-info mb-3" data-toggle="collapse" data-target="#infos-{{ loop.index }}">
+                            <div class="card-header">Infos</div>
+                        </div>
+                        <div id="infos-{{ loop.index }}" class="collapse">
+                            {% for finding in findings if finding.level == "info" %}
+                            <div class="alert alert-info">
+                                <strong>{{ finding.vulnerability }}</strong><br>
+                                {{ finding.message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function createVulnerabilityDropdown(item, index, category) {
+        var card = document.createElement("div");
+        card.className = "card mt-2 ml-5";
+
+        var cardHeader = document.createElement("div");
+        cardHeader.className = "card-header";
+        cardHeader.setAttribute("data-toggle", "collapse");
+        cardHeader.setAttribute("data-target", "#content-" + category + "-" + index);
+        cardHeader.textContent = item.vulnerability;
+
+        var collapseDiv = document.createElement("div");
+        collapseDiv.className = "collapse";
+        collapseDiv.id = "content-" + category + "-" + index;
+
+        var cardBody = document.createElement("div");
+        cardBody.className = "card-body";
+        cardBody.innerHTML = `<strong>Message:</strong> ${item.message}`;
+
+        collapseDiv.appendChild(cardBody);
+        card.appendChild(cardHeader);
+        card.appendChild(collapseDiv);
+
+        return card;
+    }
+
+    function categorizeData(jsonData) {
+        var errors = [], warnings = [], infos = [];
+        jsonData.forEach((item, index) => {
+            if (item.level === "error") {
+                errors.push(createVulnerabilityDropdown(item, index, 'error'));
+            } else if (item.level === "warning") {
+                warnings.push(createVulnerabilityDropdown(item, index, 'warning'));
+            } else if (item.level === "info") {
+                infos.push(createVulnerabilityDropdown(item, index, 'info'));
+            }
+        });
+        return { errors, warnings, infos };
+    }
+
+    function displayJSONData(jsonData) {
+        var categorizedData = categorizeData(jsonData);
+        categorizedData.errors.forEach(item => document.getElementById('error-content').appendChild(item));
+        categorizedData.warnings.forEach(item => document.getElementById('warning-content').appendChild(item));
+        categorizedData.infos.forEach(item => document.getElementById('info-content').appendChild(item));
+    }
+
+    var scanHistory = {{ scan_history|tojson|safe }};
+    scanHistory.forEach((scanData, index) => {
+        displayScanData(scanData, 'scan-' + (index + 1));
+    });
+</script>
+
+</body>
+</html>

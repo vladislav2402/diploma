@@ -1,3 +1,5 @@
 Flask
 werkzeug
 openai
+Flask-SQLAlchemy
+psycopg2-binary

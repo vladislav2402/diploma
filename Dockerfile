@@ -17,7 +17,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 WORKDIR /app
 
 # Clone & install kube-score
-RUN KUBESCORE_VERSION="v1.5.0" \
+RUN KUBESCORE_VERSION="v1.17.0" \
   && KUBESCORE_TARBALL_URL="https://github.com/zegl/kube-score/releases/download/${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION#v}_linux_amd64.tar.gz"  \
   && curl -L -o kube-score.tar.gz "$KUBESCORE_TARBALL_URL" \
   && tar -xvzf kube-score.tar.gz -C /usr/local/bin/ \
@@ -30,7 +30,7 @@ RUN go build -o /usr/local/bin/kubesec .
 
 # Clone & install kubeaudit
 WORKDIR /app/kubeaudit
-RUN KUBEAUDIT_VERSION="v0.11.5" \
+RUN KUBEAUDIT_VERSION="v0.22.1" \
         && KUBEAUDIT_TARBALL_URL="https://github.com/Shopify/kubeaudit/releases/download/$KUBEAUDIT_VERSION/kubeaudit_${KUBEAUDIT_VERSION#v}_linux_amd64.tar.gz" \
         && curl -L -o kubeaudit.tar.gz "$KUBEAUDIT_TARBALL_URL" \
         && tar -xvzf kubeaudit.tar.gz -C /usr/local/bin/ \
@@ -41,9 +41,11 @@ WORKDIR /app/datree
 RUN git clone https://github.com/datreeio/datree.git .
 RUN go build -o /usr/local/bin/datree .
 
+
 # Clone & install kube-linter
 WORKDIR /app/kubelinter
 RUN git clone https://github.com/stackrox/kube-linter.git .
+RUN go mod tidy
 RUN make build
 RUN mv .gobin/kube-linter /usr/local/bin/kube-linter
 
@@ -61,6 +63,6 @@ RUN pip3 install -r requirements.txt
 
 RUN datree config set offline local
 # Set the command to start the Python web server
-CMD ["python3", "/app/app.py"]
+CMD ["python3", "/app/run.py"]
 
 ENV OPENAI_API_KEY="sk-"

@@ -6,3 +6,25 @@ services:
       - .:/app
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: database_name
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"  # Set the default email for pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: "admin"  # Set the default password for pgAdmin
+    ports:
+      - "5050:80"  # pgAdmin will be available on port 5050 of the host
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
